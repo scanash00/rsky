@@ -96,22 +96,16 @@ pub struct CORS;
 #[get("/")]
 async fn index() -> &'static str {
     r#"
-    .------..------..------..------.
-    |R.--. ||S.--. ||K.--. ||Y.--. |
-    | :(): || :/\: || :/\: || (\/) |
-    | ()() || :\/: || :\/: || :\/: |
-    | '--'R|| '--'S|| '--'K|| '--'Y|
-    `------'`------'`------'`------'
-    .------..------..------.
-    |P.--. ||D.--. ||S.--. |
-    | :/\: || :/\: || :/\: |
-    | (__) || (__) || :\/: |
-    | '--'P|| '--'D|| '--'S|
-    `------'`------'`------'
+ _._     _,-'""`-._
+(,-.`._,'(       |\`-/|
+    `-.-' \ )-`( , o o)
+          `-    \`_`"'-
     
-    This is an atproto [https://atproto.com] Personal Data Server (PDS) running the rsky-pds codebase [https://github.com/blacksky-algorithms/rsky]
+    This is an atproto [https://atproto.com] Personal Data Server (PDS) running on hopes and dreams.
 
     Most API routes are under /xrpc/
+
+    Code: https://github.com/scanash00/rsky
     "#
 }
 
