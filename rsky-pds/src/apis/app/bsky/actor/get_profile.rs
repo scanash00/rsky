@@ -84,19 +84,23 @@ pub async fn get_profile(
     }
 }
 
+use futures::future::BoxFuture;
+
 pub fn get_profile_munge(
     local_viewer: LocalViewer,
     original: ProfileViewDetailed,
     local: LocalRecords,
     requester: String,
-) -> Result<ProfileViewDetailed> {
-    match local.profile {
-        None => Ok(original),
-        Some(profile) => {
-            if original.did != requester {
-                return Ok(original);
+) -> BoxFuture<'static, Result<ProfileViewDetailed>> {
+    Box::pin(async move {
+        match local.profile {
+            None => Ok(original),
+            Some(profile) => {
+                if original.did != requester {
+                    return Ok(original);
+                }
+                Ok(local_viewer.update_profile_detailed(original, profile.record))
             }
-            Ok(local_viewer.update_profile_detailed(original, profile.record))
         }
-    }
+    })
 }

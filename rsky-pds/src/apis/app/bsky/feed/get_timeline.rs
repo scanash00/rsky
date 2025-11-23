@@ -86,24 +86,29 @@ pub async fn get_timeline(
         .await
         {
             Ok(response) => Ok(response),
-            Err(_) => {
+            Err(e) => {
+                tracing::error!("Error in get_timeline: {e}");
                 return Err(ApiError::RuntimeError);
             }
         },
     }
 }
 
+use futures::future::BoxFuture;
+
 pub fn get_timeline_munge(
     local_viewer: LocalViewer,
     original: AuthorFeed,
     local: LocalRecords,
     _requester: String,
-) -> Result<AuthorFeed> {
-    let feed = futures::executor::block_on(
-        local_viewer.format_and_insert_posts_in_feed(original.feed, local.posts),
-    )?;
-    Ok(AuthorFeed {
-        cursor: original.cursor,
-        feed,
+) -> BoxFuture<'static, Result<AuthorFeed>> {
+    Box::pin(async move {
+        let feed = local_viewer
+            .format_and_insert_posts_in_feed(original.feed, local.posts)
+            .await?;
+        Ok(AuthorFeed {
+            cursor: original.cursor,
+            feed,
+        })
     })
 }

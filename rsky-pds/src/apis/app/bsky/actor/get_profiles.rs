@@ -76,27 +76,31 @@ pub async fn get_profiles(
     }
 }
 
+use futures::future::BoxFuture;
+
 pub fn get_profiles_munge(
     local_viewer: LocalViewer,
     original: GetProfilesOutput,
     local: LocalRecords,
     requester: String,
-) -> Result<GetProfilesOutput> {
-    match local.profile {
-        None => Ok(original),
-        Some(profile) => {
-            let profiles = original
-                .profiles
-                .into_iter()
-                .map(|prof| {
-                    if prof.did != requester {
-                        prof
-                    } else {
-                        local_viewer.update_profile_detailed(prof, profile.record.clone())
-                    }
-                })
-                .collect::<Vec<ProfileViewDetailed>>();
-            Ok(GetProfilesOutput { profiles })
+) -> BoxFuture<'static, Result<GetProfilesOutput>> {
+    Box::pin(async move {
+        match local.profile {
+            None => Ok(original),
+            Some(profile) => {
+                let profiles = original
+                    .profiles
+                    .into_iter()
+                    .map(|prof| {
+                        if prof.did != requester {
+                            prof
+                        } else {
+                            local_viewer.update_profile_detailed(prof, profile.record.clone())
+                        }
+                    })
+                    .collect::<Vec<ProfileViewDetailed>>();
+                Ok(GetProfilesOutput { profiles })
+            }
         }
-    }
+    })
 }

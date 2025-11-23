@@ -24,7 +24,9 @@ use std::time::SystemTime;
 
 const REPO_REV_HEADER: &str = "atproto-repo-rev";
 
-pub type MungeFn<T> = fn(LocalViewer, T, LocalRecords, String) -> Result<T>;
+use futures::future::BoxFuture;
+
+pub type MungeFn<T> = fn(LocalViewer, T, LocalRecords, String) -> BoxFuture<'static, Result<T>>;
 
 #[derive(Serialize)]
 pub struct HandlerResponse<T: Serialize> {
@@ -167,7 +169,7 @@ pub async fn read_after_write_internal<T: DeserializeOwned + serde::Serialize>(
             let local_viewer_lock = state_local_viewer.local_viewer.read().await;
             let local_viewer = local_viewer_lock(actor_store, account_manager);
             let parse_res = parse_res(nsid, res)?;
-            let data = munge(local_viewer, parse_res, local.clone(), requester)?;
+            let data = munge(local_viewer, parse_res, local.clone(), requester).await?;
             Ok(ReadAfterWriteResponse::HandlerResponse(
                 format_munged_response(data, get_local_lag(&local)?)?,
             ))

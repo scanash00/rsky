@@ -93,51 +93,36 @@ pub async fn get_actor_likes(
     }
 }
 
+use futures::future::BoxFuture;
+
 pub fn get_author_munge(
     local_viewer: LocalViewer,
     original: AuthorFeed,
     local: LocalRecords,
     requester: String,
-) -> Result<AuthorFeed> {
-    let feed = original.feed;
-    match local.profile {
-        None => Ok(AuthorFeed {
-            cursor: original.cursor,
-            feed,
-        }),
-        Some(profile) => {
-            let feed = feed
-                .into_iter()
-                .map(|item| {
-                    if item.post.author.did == requester {
-                        let FeedViewPost {
-                            post,
-                            reply,
-                            reason,
-                            feed_context,
-                        } = item;
-                        let PostView {
-                            uri,
-                            cid,
-                            author,
-                            record,
-                            embed,
-                            reply_count,
-                            repost_count,
-                            like_count,
-                            indexed_at,
-                            viewer,
-                            labels,
-                        } = post;
-                        FeedViewPost {
-                            reply,
-                            reason,
-                            feed_context,
-                            post: PostView {
+) -> BoxFuture<'static, Result<AuthorFeed>> {
+    Box::pin(async move {
+        let feed = original.feed;
+        match local.profile {
+            None => Ok(AuthorFeed {
+                cursor: original.cursor,
+                feed,
+            }),
+            Some(profile) => {
+                let feed = feed
+                    .into_iter()
+                    .map(|item| {
+                        if item.post.author.did == requester {
+                            let FeedViewPost {
+                                post,
+                                reply,
+                                reason,
+                                feed_context,
+                            } = item;
+                            let PostView {
                                 uri,
                                 cid,
-                                author: local_viewer
-                                    .update_profile_view_basic(author, profile.record.clone()),
+                                author,
                                 record,
                                 embed,
                                 reply_count,
@@ -146,17 +131,36 @@ pub fn get_author_munge(
                                 indexed_at,
                                 viewer,
                                 labels,
-                            },
+                            } = post;
+                            FeedViewPost {
+                                reply,
+                                reason,
+                                feed_context,
+                                post: PostView {
+                                    uri,
+                                    cid,
+                                    author: local_viewer
+                                        .update_profile_view_basic(author, profile.record.clone()),
+                                    record,
+                                    embed,
+                                    reply_count,
+                                    repost_count,
+                                    like_count,
+                                    indexed_at,
+                                    viewer,
+                                    labels,
+                                },
+                            }
+                        } else {
+                            item
                         }
-                    } else {
-                        item
-                    }
+                    })
+                    .collect::<Vec<FeedViewPost>>();
+                Ok(AuthorFeed {
+                    cursor: original.cursor,
+                    feed,
                 })
-                .collect::<Vec<FeedViewPost>>();
-            Ok(AuthorFeed {
-                cursor: original.cursor,
-                feed,
-            })
+            }
         }
-    }
+    })
 }

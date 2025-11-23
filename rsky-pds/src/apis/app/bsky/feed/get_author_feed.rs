@@ -112,64 +112,52 @@ pub async fn get_author_feed(
         .await
         {
             Ok(response) => Ok(response),
-            Err(_) => Err(ApiError::RuntimeError),
+            Err(e) => {
+                tracing::error!("Error in get_author_feed: {e}");
+                Err(ApiError::RuntimeError)
+            },
         },
     }
 }
+
+use futures::future::BoxFuture;
 
 pub fn get_author_munge(
     local_viewer: LocalViewer,
     original: AuthorFeed,
     local: LocalRecords,
     requester: String,
-) -> Result<AuthorFeed> {
-    if !is_users_feed(&original, &requester) {
-        return Ok(original);
-    }
-    let feed = original.feed;
-    match local.profile {
-        None => {
-            let feed = futures::executor::block_on(
-                local_viewer.format_and_insert_posts_in_feed(feed, local.posts),
-            )?;
-            Ok(AuthorFeed {
-                cursor: original.cursor,
-                feed,
-            })
+) -> BoxFuture<'static, Result<AuthorFeed>> {
+    Box::pin(async move {
+        if !is_users_feed(&original, &requester) {
+            return Ok(original);
         }
-        Some(profile) => {
-            let feed = feed
-                .into_iter()
-                .map(|item| {
-                    if item.post.author.did == requester {
-                        let FeedViewPost {
-                            post,
-                            reply,
-                            reason,
-                            feed_context,
-                        } = item;
-                        let PostView {
-                            uri,
-                            cid,
-                            author,
-                            record,
-                            embed,
-                            reply_count,
-                            repost_count,
-                            like_count,
-                            indexed_at,
-                            viewer,
-                            labels,
-                        } = post;
-                        FeedViewPost {
-                            reply,
-                            reason,
-                            feed_context,
-                            post: PostView {
+        let feed = original.feed;
+        match local.profile {
+            None => {
+                let feed = local_viewer
+                    .format_and_insert_posts_in_feed(feed, local.posts)
+                    .await?;
+                Ok(AuthorFeed {
+                    cursor: original.cursor,
+                    feed,
+                })
+            }
+            Some(profile) => {
+                let feed = feed
+                    .into_iter()
+                    .map(|item| {
+                        if item.post.author.did == requester {
+                            let FeedViewPost {
+                                post,
+                                reply,
+                                reason,
+                                feed_context,
+                            } = item;
+                            let PostView {
                                 uri,
                                 cid,
-                                author: local_viewer
-                                    .update_profile_view_basic(author, profile.record.clone()),
+                                author,
                                 record,
                                 embed,
                                 reply_count,
@@ -178,22 +166,41 @@ pub fn get_author_munge(
                                 indexed_at,
                                 viewer,
                                 labels,
-                            },
+                            } = post;
+                            FeedViewPost {
+                                reply,
+                                reason,
+                                feed_context,
+                                post: PostView {
+                                    uri,
+                                    cid,
+                                    author: local_viewer
+                                        .update_profile_view_basic(author, profile.record.clone()),
+                                    record,
+                                    embed,
+                                    reply_count,
+                                    repost_count,
+                                    like_count,
+                                    indexed_at,
+                                    viewer,
+                                    labels,
+                                },
+                            }
+                        } else {
+                            item
                         }
-                    } else {
-                        item
-                    }
+                    })
+                    .collect::<Vec<FeedViewPost>>();
+                let feed = local_viewer
+                    .format_and_insert_posts_in_feed(feed, local.posts)
+                    .await?;
+                Ok(AuthorFeed {
+                    cursor: original.cursor,
+                    feed,
                 })
-                .collect::<Vec<FeedViewPost>>();
-            let feed = futures::executor::block_on(
-                local_viewer.format_and_insert_posts_in_feed(feed, local.posts),
-            )?;
-            Ok(AuthorFeed {
-                cursor: original.cursor,
-                feed,
-            })
+            }
         }
-    }
+    })
 }
 
 pub fn is_users_feed(feed: &AuthorFeed, requester: &String) -> bool {

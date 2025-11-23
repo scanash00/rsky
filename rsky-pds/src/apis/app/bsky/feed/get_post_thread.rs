@@ -204,22 +204,25 @@ pub async fn get_post_thread(
 }
 
 #[allow(unused_variables)]
+use futures::future::BoxFuture;
+
 pub fn get_post_thread_munge(
     local_viewer: LocalViewer,
     original: GetPostThreadOutput,
     local: LocalRecords,
     requester: String,
-) -> Result<GetPostThreadOutput> {
-    match original.thread {
-        ThreadViewPostEnum::ThreadViewPost(post) => {
-            let thread =
-                futures::executor::block_on(add_posts_to_thread(&local_viewer, post, local.posts))?;
-            Ok(GetPostThreadOutput {
-                thread: ThreadViewPostEnum::ThreadViewPost(thread),
-            })
+) -> BoxFuture<'static, Result<GetPostThreadOutput>> {
+    Box::pin(async move {
+        match original.thread {
+            ThreadViewPostEnum::ThreadViewPost(post) => {
+                let thread = add_posts_to_thread(&local_viewer, post, local.posts).await?;
+                Ok(GetPostThreadOutput {
+                    thread: ThreadViewPostEnum::ThreadViewPost(thread),
+                })
+            }
+            _ => Ok(original),
         }
-        _ => Ok(original),
-    }
+    })
 }
 
 pub async fn add_posts_to_thread(
