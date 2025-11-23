@@ -3,7 +3,7 @@ use anyhow::Result;
 use hickory_resolver::config::*;
 use hickory_resolver::error::ResolveResult;
 use hickory_resolver::lookup_ip::LookupIp;
-use hickory_resolver::Resolver;
+use hickory_resolver::TokioAsyncResolver;
 use std::net::{IpAddr, SocketAddr};
 use std::time::Duration;
 use url::Url;
@@ -41,8 +41,8 @@ impl HandleResolver {
     }
 
     pub async fn resolve_dns(&self, handle: &String) -> Result<Option<String>> {
-        let resolver = Resolver::new(ResolverConfig::default(), ResolverOpts::default())?;
-        let results = match resolver.txt_lookup(format!("{SUBDOMAIN}.{handle}")) {
+        let resolver = TokioAsyncResolver::tokio(ResolverConfig::default(), ResolverOpts::default());
+        let results = match resolver.txt_lookup(format!("{SUBDOMAIN}.{handle}")).await {
             Ok(res) => res,
             Err(_) => return Ok(None),
         };
@@ -97,9 +97,9 @@ impl HandleResolver {
                     })
                     .collect::<Vec<()>>();
 
-                let resolver = Resolver::new(config, ResolverOpts::default())?;
+                let resolver = TokioAsyncResolver::tokio(config, ResolverOpts::default());
 
-                let results = match resolver.txt_lookup(format!("{SUBDOMAIN}.{handle}")) {
+                let results = match resolver.txt_lookup(format!("{SUBDOMAIN}.{handle}")).await {
                     Ok(res) => res,
                     Err(_) => return Ok(None),
                 };
@@ -133,11 +133,11 @@ impl HandleResolver {
             Some(backup_nameservers) => {
                 if self.backup_nameserver_ips.is_none() {
                     let resolver =
-                        Resolver::new(ResolverConfig::default(), ResolverOpts::default())?;
-                    let responses: Vec<LookupIp> = backup_nameservers
-                        .iter()
-                        .map(|h| resolver.lookup_ip(h))
-                        .collect::<ResolveResult<Vec<LookupIp>>>()?;
+                        TokioAsyncResolver::tokio(ResolverConfig::default(), ResolverOpts::default());
+                    let mut responses = Vec::new();
+                    for h in backup_nameservers {
+                        responses.push(resolver.lookup_ip(h).await?);
+                    }
 
                     for response in responses {
                         let mut backup_nameserver_ips = match &self.backup_nameserver_ips {

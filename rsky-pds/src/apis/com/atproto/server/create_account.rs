@@ -101,8 +101,8 @@ pub async fn server_create_account(
                 Ok(_) => {
                     tracing::info!("Succesfully sent PLC Operation")
                 }
-                Err(_) => {
-                    tracing::error!("Failed to create did:plc");
+                Err(error) => {
+                    tracing::error!("Failed to create did:plc: {error}");
                     actor_store.destroy().await?;
                     return Err(ApiError::RuntimeError);
                 }

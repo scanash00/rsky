@@ -32,24 +32,25 @@ impl Crawlers {
             .duration_since(SystemTime::UNIX_EPOCH)
             .expect("timestamp in micros since UNIX epoch")
             .as_micros() as usize;
-        if now - self.last_notified < NOTIFY_THRESHOLD as usize {
-            return Ok(());
-        }
+        let hostname = self.hostname.clone();
         let _ = stream::iter(self.crawlers.clone())
-            .then(|service: String| async move {
-                let client = reqwest::Client::builder()
-                    .user_agent(APP_USER_AGENT)
-                    .build()?;
-                let record = CrawlerRequest {
-                    hostname: service.clone(),
-                };
-                Ok::<reqwest::Response, anyhow::Error>(
-                    client
-                        .post(format!("{}/xrpc/com.atproto.sync.requestCrawl", service))
-                        .json(&record)
-                        .send()
-                        .await?,
-                )
+            .then(|service: String| {
+                let hostname = hostname.clone();
+                async move {
+                    let client = reqwest::Client::builder()
+                        .user_agent(APP_USER_AGENT)
+                        .build()?;
+                    let record = CrawlerRequest {
+                        hostname,
+                    };
+                    Ok::<reqwest::Response, anyhow::Error>(
+                        client
+                            .post(format!("{}/xrpc/com.atproto.sync.requestCrawl", service))
+                            .json(&record)
+                            .send()
+                            .await?,
+                    )
+                }
             })
             .collect::<Vec<_>>()
             .await
