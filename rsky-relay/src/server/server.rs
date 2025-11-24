@@ -22,8 +22,8 @@ use crate::SHUTDOWN;
 use crate::config::{HOSTS_INTERVAL, PORT};
 #[cfg(not(feature = "labeler"))]
 use crate::config::{HOSTS_MIN_ACCOUNTS, HOSTS_RELAY};
-use crate::crawler::types::{RequestCrawl, RequestCrawlSender};
-use crate::publisher::types::{MaybeTlsStream, SubscribeRepos, SubscribeReposSender};
+use crate::crawler::{RequestCrawl, RequestCrawlSender};
+use crate::publisher::{MaybeTlsStream, SubscribeRepos, SubscribeReposSender};
 #[cfg(not(feature = "labeler"))]
 use crate::server::types::{Host, HostStatus, ListHosts};
 
@@ -50,7 +50,7 @@ const INDEX_ASCII: &str = r#"
  ___/ `   ' ,""+ \
 (__...'   __\    |`.___.';
   (_,...'(_,.`__)/'.....+
-
+ 
  This is an atproto relay instance running the
  'rsky-relay' codebase [https://github.com/scanash00/rsky]
 

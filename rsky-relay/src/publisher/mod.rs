@@ -4,4 +4,4 @@ mod types;
 mod worker;
 
 pub use manager::{Manager, ManagerError};
-// Re-exports removed - types used internally only
+pub use types::{MaybeTlsStream, SubscribeRepos, SubscribeReposSender};
