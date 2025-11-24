@@ -1,8 +1,8 @@
 use crate::config::ServerConfig;
 use crate::crawlers::Crawlers;
 use crate::sequencer::events::{
-    AccountEvt, CommitEvt, IdentityEvt, SeqEvt, SyncEvt, TypedAccountEvt, TypedCommitEvt,
-    TypedIdentityEvt, TypedSyncEvt,
+    AccountEvt, CommitEvt, HandleEvt, IdentityEvt, SeqEvt, SyncEvt, TypedAccountEvt,
+    TypedCommitEvt, TypedHandleEvt, TypedIdentityEvt, TypedSyncEvt,
 };
 use crate::sequencer::outbox::{Outbox, OutboxOpts};
 use crate::sequencer::Sequencer;
@@ -254,6 +254,29 @@ pub async fn subscribe_repos<'a>(
                                 }
                             };
                             yield Message::Binary(binary);
+                        },
+                        SeqEvt::TypedHandleEvt(handle_evt) => {
+                             let TypedHandleEvt { r#type, seq, time, evt } = handle_evt;
+                             let HandleEvt { did, handle } = evt;
+                             let subscribe_handle_evt = SubscribeReposIdentity {
+                                 did,
+                                 seq,
+                                 handle: Some(handle),
+                                 time: from_str_to_utc(&time),
+                             };
+                             let message_frame = MessageFrame::new(subscribe_handle_evt, Some(MessageFrameOpts { r#type: Some(format!("#{0}",r#type)) }));
+                             let binary = match message_frame.to_bytes() {
+                                 Ok(binary) => binary,
+                                 Err(_) => {
+                                     let error_frame = ErrorFrame::new(ErrorFrameBody {
+                                         error: "SerializationError".to_string(),
+                                         message: Some("Failed to serialize event to message frame.".to_string()),
+                                     });
+                                     yield Message::Binary(error_frame.to_bytes().expect("couldn't translate error to binary."));
+                                     return;
+                                 }
+                             };
+                             yield Message::Binary(binary);
                         }
                     }
                 }

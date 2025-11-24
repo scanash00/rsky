@@ -4,8 +4,8 @@ use crate::crawlers::Crawlers;
 use crate::db::establish_connection_for_sequencer;
 use crate::models;
 use crate::sequencer::events::{
-    format_seq_account_evt, format_seq_commit, format_seq_handle_update, format_seq_identity_evt,
-    SeqEvt, TypedAccountEvt, TypedCommitEvt, TypedIdentityEvt, TypedSyncEvt,
+    AccountEvt, CommitEvt, IdentityEvt, SeqEvt, SyncEvt, TypedAccountEvt, TypedCommitEvt,
+    TypedHandleEvt, TypedIdentityEvt, TypedSyncEvt,
 };
 use crate::EVENT_EMITTER;
 use anyhow::Result;
