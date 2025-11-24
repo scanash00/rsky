@@ -165,7 +165,7 @@ pub struct TypedAccountEvt {
 #[serde(untagged)]
 pub enum SeqEvt {
     TypedCommitEvt(TypedCommitEvt),
-    // TypedHandleEvt(TypedHandleEvt),
+    TypedHandleEvt(TypedHandleEvt),
     TypedIdentityEvt(TypedIdentityEvt),
     TypedAccountEvt(TypedAccountEvt),
     // TypedTombstoneEvt(TypedTombstoneEvt),
@@ -196,6 +196,9 @@ impl<'de> Deserialize<'de> for SeqEvt {
                 Some("account") => Ok(SeqEvt::TypedAccountEvt(
                     serde_json::from_value(value).map_err(DeserializerError::custom)?,
                 )),
+                Some("handle") => Ok(SeqEvt::TypedHandleEvt(
+                    serde_json::from_value(value).map_err(DeserializerError::custom)?,
+                )),
                 _ => Err(DeserializerError::custom("Unknown event type")),
             }
         } else {
@@ -211,6 +214,7 @@ impl SeqEvt {
             SeqEvt::TypedIdentityEvt(this) => this.seq,
             SeqEvt::TypedAccountEvt(this) => this.seq,
             SeqEvt::TypedSyncEvt(this) => this.seq,
+            SeqEvt::TypedHandleEvt(this) => this.seq,
         }
     }
 }

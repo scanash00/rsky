@@ -178,6 +178,14 @@ impl Sequencer {
                             evt: cbor_to_struct(row.event)?,
                         }));
                     }
+                    "handle" => {
+                        seq_evts.push(SeqEvt::TypedHandleEvt(TypedHandleEvt {
+                            r#type: "handle".to_string(),
+                            seq,
+                            time,
+                            evt: cbor_to_struct(row.event)?,
+                        }));
+                    }
                     _ => {
                         tracing::warn!("Unknown event type in sequencer: {}", row.event_type);
                     }
