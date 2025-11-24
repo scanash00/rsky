@@ -30,7 +30,8 @@ RUN mkdir -p /data && chmod 777 /data
 # Create initialization script
 RUN echo '#!/bin/sh\n\
 sqlite3 /data/plc_directory.db "CREATE TABLE IF NOT EXISTS plc_operations (cid TEXT, did TEXT, created_at TEXT, nullified INTEGER, operation BLOB); CREATE TABLE IF NOT EXISTS plc_keys (did TEXT PRIMARY KEY, pds_endpoint TEXT, pds_key TEXT, labeler_endpoint TEXT, labeler_key TEXT); CREATE TABLE IF NOT EXISTS plc_labelers (did TEXT PRIMARY KEY, labeler_endpoint TEXT);"\n\
-exec rsky-relay --no-plc-export' > /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
+chmod 666 /data/plc_directory.db\n\
+exec rsky-relay' > /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
 WORKDIR /data
 
