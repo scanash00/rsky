@@ -81,11 +81,15 @@ impl Resolver {
         }
         let now = Instant::now();
         let last = now.checked_sub(PLC_EXPORT_INTERVAL).unwrap_or(now);
-        let after = conn.query_one(
+        let after = match conn.query_one(
             "SELECT created_at FROM plc_operations ORDER BY created_at DESC LIMIT 1",
             [],
             |row| Ok(Some(row.get("created_at")?)),
-        )?;
+        ) {
+            Ok(after) => after,
+            Err(rusqlite::Error::QueryReturnedNoRows) => None,
+            Err(err) => return Err(err.into()),
+        };
         let client = Client::builder()
             .user_agent("rsky-relay")
             .timeout(REQ_TIMEOUT)
