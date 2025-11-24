@@ -264,7 +264,7 @@ pub async fn subscribe_repos<'a>(
                                  handle: Some(handle),
                                  time: from_str_to_utc(&time),
                              };
-                             let message_frame = MessageFrame::new(subscribe_handle_evt, Some(MessageFrameOpts { r#type: Some(format!("#{0}",r#type)) }));
+                             let message_frame = MessageFrame::new(subscribe_handle_evt, Some(MessageFrameOpts { r#type: Some("#identity".to_string()) }));
                              let binary = match message_frame.to_bytes() {
                                  Ok(binary) => binary,
                                  Err(_) => {
