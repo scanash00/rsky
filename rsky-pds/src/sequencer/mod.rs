@@ -179,7 +179,7 @@ impl Sequencer {
                         }));
                     }
                     _ => {
-                        eprintln!("ERROR: request_seq_range invalid event type");
+                        tracing::warn!("Unknown event type in sequencer: {}", row.event_type);
                     }
                 },
             }

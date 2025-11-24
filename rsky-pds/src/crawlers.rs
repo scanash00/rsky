@@ -43,13 +43,15 @@ impl Crawlers {
                     let record = CrawlerRequest {
                         hostname,
                     };
-                    Ok::<reqwest::Response, anyhow::Error>(
-                        client
-                            .post(format!("{}/xrpc/com.atproto.sync.requestCrawl", service))
-                            .json(&record)
-                            .send()
-                            .await?,
-                    )
+                    let url = format!("{}/xrpc/com.atproto.sync.requestCrawl", service);
+                    tracing::info!("Sending crawl request to {}", url);
+                    let resp = client
+                        .post(&url)
+                        .json(&record)
+                        .send()
+                        .await?;
+                    tracing::info!("Crawl request to {} returned status: {}", url, resp.status());
+                    Ok::<reqwest::Response, anyhow::Error>(resp)
                 }
             })
             .collect::<Vec<_>>()

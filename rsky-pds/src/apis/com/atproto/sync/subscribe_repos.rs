@@ -55,7 +55,7 @@ pub async fn subscribe_repos<'a>(
             })
         );
 
-        tracing::debug!("@LOG DEBUG: request to com.atproto.sync.subscribeRepos; Cursor={cursor:?}");
+        tracing::info!("New subscribeRepos connection. Cursor: {:?}", cursor);
         let backfill_time = get_backfill_limit(cfg.subscription.repo_backfill_limit_ms);
 
         let mut outbox_cursor: Option<i64> = None;
