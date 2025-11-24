@@ -44,21 +44,15 @@ const PATH_REQUEST_CRAWL: &str = if cfg!(feature = "labeler") {
 };
 
 const INDEX_ASCII: &str = r"
-    .------..------..------..------.
-    |R.--. ||S.--. ||K.--. ||Y.--. |
-    | :(): || :/\: || :/\: || (\/) |
-    | ()() || :\/: || :\/: || :\/: |
-    | '--'R|| '--'S|| '--'K|| '--'Y|
-    `------'`------'`------'`------'
-    .------..------..------..------..------.
-    |R.--. ||E.--. ||L.--. ||A.--. ||Y.--. |
-    | :(): || (\/) || :/\: || (\/) || (\/) |
-    | ()() || :\/: || (__) || :\/: || :\/: |
-    | '--'R|| '--'E|| '--'L|| '--'A|| '--'Y|
-    `------'`------'`------'`------'`------'
+   |\---/|
+   | ,_, |
+    \_`_/-..----.
+ ___/ `   ' ,""+ \
+(__...'   __\    |`.___.';
+  (_,...'(_,.`__)/'.....+
 
  This is an atproto relay instance running the
- 'rsky-relay' codebase [https://github.com/blacksky-algorithms/rsky]
+ 'rsky-relay' codebase [https://github.com/scanash00/rsky]
 
  The firehose WebSocket path is at:  /xrpc/com.atproto.sync.subscribeRepos
 ";
