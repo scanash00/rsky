@@ -22,8 +22,8 @@ use crate::SHUTDOWN;
 use crate::config::{HOSTS_INTERVAL, PORT};
 #[cfg(not(feature = "labeler"))]
 use crate::config::{HOSTS_MIN_ACCOUNTS, HOSTS_RELAY};
-use crate::crawler::{RequestCrawl, RequestCrawlSender};
-use crate::publisher::{MaybeTlsStream, SubscribeRepos, SubscribeReposSender};
+use crate::crawler::types::{RequestCrawl, RequestCrawlSender};
+use crate::publisher::types::{MaybeTlsStream, SubscribeRepos, SubscribeReposSender};
 #[cfg(not(feature = "labeler"))]
 use crate::server::types::{Host, HostStatus, ListHosts};
 
@@ -43,7 +43,7 @@ const PATH_REQUEST_CRAWL: &str = if cfg!(feature = "labeler") {
     "/xrpc/com.atproto.sync.requestCrawl"
 };
 
-const INDEX_ASCII: &str = r"
+const INDEX_ASCII: &str = r#"
    |\---/|
    | ,_, |
     \_`_/-..----.
@@ -55,7 +55,7 @@ const INDEX_ASCII: &str = r"
  'rsky-relay' codebase [https://github.com/scanash00/rsky]
 
  The firehose WebSocket path is at:  /xrpc/com.atproto.sync.subscribeRepos
-";
+"#;
 
 #[derive(Debug, Error)]
 pub enum ServerError {

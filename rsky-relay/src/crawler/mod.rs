@@ -5,4 +5,4 @@ mod types;
 mod worker;
 
 pub use manager::{Manager, ManagerError};
-pub use types::{RequestCrawl, RequestCrawlSender};
+pub use types::RequestCrawl;
