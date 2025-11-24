@@ -3,14 +3,14 @@ use crate::actor_store::repo::types::SyncEvtData;
 use crate::crawlers::Crawlers;
 use crate::db::establish_connection_for_sequencer;
 use crate::models;
-use crate::sequencer::events::{
-    AccountEvt, CommitEvt, IdentityEvt, SeqEvt, SyncEvt, TypedAccountEvt, TypedCommitEvt,
-    TypedHandleEvt, TypedIdentityEvt, TypedSyncEvt,
+use self::events::{
+    format_seq_account_evt, format_seq_commit, format_seq_handle_update, format_seq_identity_evt,
+    format_seq_sync_evt, SeqEvt, TypedAccountEvt, TypedCommitEvt, TypedHandleEvt, TypedIdentityEvt,
+    TypedSyncEvt,
 };
 use crate::EVENT_EMITTER;
 use anyhow::Result;
 use diesel::*;
-use events::format_seq_sync_evt;
 use futures::{Stream, StreamExt};
 use rsky_common::time::SECOND;
 use rsky_common::{cbor_to_struct, wait};
