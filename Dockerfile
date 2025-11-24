@@ -23,6 +23,9 @@ RUN apt-get update && apt-get install -y \
     libssl3 \
     && rm -rf /var/lib/apt/lists/*
 
+# Create data directory with proper permissions
+RUN mkdir -p /data && chmod 777 /data
+
 WORKDIR /data
 
 # Copy the binary
