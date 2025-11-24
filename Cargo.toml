@@ -18,6 +18,6 @@ rsky-crypto = { path = "rsky-crypto" }
 serde_ipld_dagcbor = "0.6"
 rand = "0.8"
 rand_core = "0.6"
-secp256k1 = "0.29"
+secp256k1 = { version = "0.29", features = ["global-context", "serde", "rand", "hashes", "rand-std"] }
 sha2 = "0.10"
 lexicon_cid = { package = "cid", version = "0.11", features = ["serde-codec"] }
