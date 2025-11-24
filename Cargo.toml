@@ -20,4 +20,4 @@ rand = "0.8"
 rand_core = "0.6"
 secp256k1 = "0.29"
 sha2 = "0.10"
-lexicon_cid = "0.5"
+lexicon_cid = { package = "cid", version = "0.11", features = ["serde-codec"] }
