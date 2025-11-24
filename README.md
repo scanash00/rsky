@@ -1,200 +1,102 @@
-<p align="center">
-    <a href="https://blackskyweb.xyz">
-    <img src="https://github.com/user-attachments/assets/e702e2ed-5c97-4dad-94fe-237dbfbd20c9">
-    </a>
-</p>
-<h3 align="center">
-  AT Protocol Implementation (Rust)
-</h3>
+# rsky-relay
 
-<div align="center">
+An ATproto-compliant relay server implementation written in Rust.
 
-[![Ceasefire Now](https://badge.techforpalestine.org/default)](https://techforpalestine.org/learn-more)
-[![dependency status](https://deps.rs/repo/github/blacksky-algorithms/rsky/status.svg?style=flat-square)](https://deps.rs/repo/github/blacksky-algorithms/rsky)
-[![Follow](https://img.shields.io/badge/Follow-%40blacksky.app-0073fa?style=flat&logo=bluesky&labelColor=%23151e27&link=https%3A%2F%2Fbsky.app%2Fprofile%2Fblacksky.app)](https://bsky.app/profile/blacksky.app)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/blacksky-algorithms/rsky?logo=github)](https://github.com/blacksky-algorithms/rsky)
-[![GitHub Repo stars](https://img.shields.io/github/stars/blacksky-algorithms/rsky?style=flat&logo=github)](https://github.com/blacksky-algorithms/rsky)
-[![Backers on Open Collective](https://opencollective.com/blacksky/backers/badge.svg)](#backers)
-[![Join Our Discord](https://img.shields.io/badge/Join%20Us%20on-Discord-7289DA.svg?style=for-the-badge&logo=discord)](https://discord.gg/AFuuPvM7zZ)
+## Overview
 
-</div>
+This project implements an ATproto relay that allows you to participate in the AT Protocol network. It handles subscription to repository updates via the `com.atproto.sync.subscribeRepos` endpoint and provides relay functionality to other services.
 
----
-> [!WARNING]
-> ***This library is a work in progress. Things will change. Things are incomplete. Things will break. Until the project reaches version 1.0.0, stability will not be guaranteed.***
+## Prerequisites
 
-rsky (/ˈrɪski/) is intended to be a full implementation of [AT Protocol](https://atproto.com/) in the Rust language. Most of the code here are general purpose implementations while some (like rsky-feedgen) are specific to the use cases of the Blacksky community.
+- Rust and Cargo
+- Python 3 (for running the crawler script)
+- SSL certificates (optional, for HTTPS support)
+- `websocat` (for testing WebSocket connections)
 
-## What is in here?
+## Setup and Installation
 
-**Rust Crates:**
+### Clone the Repository
 
-| Crate                                                      | Docs                                | crates.io                                                                                                                                                   |
-|------------------------------------------------------------|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `rsky-crypto`: cryptographic signing and key serialization | [README](./rsky-crypto/README.md)   | [![Crate](https://img.shields.io/crates/v/rsky-crypto?logo=rust&style=flat-square&logoColor=E05D44&color=E05D44)](https://crates.io/crates/rsky-crypto)     |
-| `rsky-identity`: DID and handle resolution                 | [README](./rsky-identity/README.md) | [![Crate](https://img.shields.io/crates/v/rsky-identity?logo=rust&style=flat-square&logoColor=E05D44&color=E05D44)](https://crates.io/crates/rsky-identity) |
-| `rsky-lexicon`: schema definition language                 | [README](./rsky-lexicon/README.md)  | [![Crate](https://img.shields.io/crates/v/rsky-lexicon?logo=rust&style=flat-square&logoColor=E05D44&color=E05D44)](https://crates.io/crates/rsky-lexicon)   |
-| `rsky-syntax`: string parsers for identifiers              | [README](./rsky-syntax/README.md)   | [![Crate](https://img.shields.io/crates/v/rsky-syntax?logo=rust&style=flat-square&logoColor=E05D44&color=E05D44)](https://crates.io/crates/rsky-syntax)     |
-| `rsky-common`: shared code                                 | [README](./rsky-common/README.md)   | [![Crate](https://img.shields.io/crates/v/rsky-common?logo=rust&style=flat-square&logoColor=E05D44&color=E05D44)](https://crates.io/crates/rsky-common)     |
-| `rsky-repo`: data storage structure, including MST         | [README](./rsky-repo/README.md)     | [![Crate](https://img.shields.io/crates/v/rsky-repo?logo=rust&style=flat-square&logoColor=E05D44&color=E05D44)](https://crates.io/crates/rsky-repo)         |
+```bash
+git clone https://github.com/yourusername/rsky-relay.git
+cd rsky-relay
+```
 
-**Rust Services:**
+### Building the Project
 
-- `rsky-relay`: The Relay handles "big-world" networking. It crawls the network, gathering as much data as it can, and outputs it in one big stream for other services to use. It’s analogous to a firehose provider or a super-powered relay node.
-- `rsky-pds`: "Personal Data Server", hosting repo content for atproto accounts. It differs from the canonical Typescript implementation by using Postgres instead of SQLite, s3 compatible blob storage instead of on-disk, and mailgun for emailing. All to make the PDS easier to migrate between cloud hosting providers and more maintainable.
-- `rsky-feedgen`: Bluesky feed generator that closely follows the use cases of the Blacksky community.
-- `rsky-firehose`: Firehose consumer.
-- `rsky-jetstream-subscriber`: Firehose consumer for Jetstream.
-- `rsky-labeler`: Firehose consumer that labels content.
-- `Cypher`: An AT Protocol app-view designed for local-only posting and global views.
-- `rsky-satnav`: "Structured Archive Traversal, Navigation & Verification", a DASL CAR and AT Protocol repository explorer.
+```bash
+cargo build --release
+```
 
-## About AT Protocol
+## Usage
 
-The Authenticated Transfer Protocol ("ATP" or "atproto") is a decentralized social media protocol, developed by [Bluesky PBC](https://bsky.social). Learn more at:
+### 1. Run the Crawler (Optional)
 
-- [Overview and Guides](https://atproto.com/guides/overview) 👈🏾 Best starting point
-- [Github Discussions](https://github.com/bluesky-social/atproto/discussions) 👈🏾 Great place to ask questions
-- [Protocol Specifications](https://atproto.com/specs/atp)
-- [Blogpost on self-authenticating data structures](https://bsky.social/about/blog/3-6-2022-a-self-authenticating-social-protocol)
+The crawler script collects necessary data from the network:
 
-## Roadmap
+```bash
+cd rsky-relay
+uv init .
+uv add requests
+uv run python3 crawler.py
+```
 
--   [x] Feedgen and firehose consumer
--   [x] PDS implementation
--   [x] Frontend bluesky client
--   [ ] Feedgen admin client
+Note: You can stop the crawler after a few requests and then run the relay with the `--no-plc-export` flag.
 
-## Backers
+### 2. Generate SSL Certificates (Optional for HTTPS)
 
-[Become a backer](https://opencollective.com/blacksky#backer) and get your image on our README on GitHub with a link to your site.
+If you want to use HTTPS, generate SSL certificates using the provided script:
 
-<a href="https://opencollective.com/blacksky/backer/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/0/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/1/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/2/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/3/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/4/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/5/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/6/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/7/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/7/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/8/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/8/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/9/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/9/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/10/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/10/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/11/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/11/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/12/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/12/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/13/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/13/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/14/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/14/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/15/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/15/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/16/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/16/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/17/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/17/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/18/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/18/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/19/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/19/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/20/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/20/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/21/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/21/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/22/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/22/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/23/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/23/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/24/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/24/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/25/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/25/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/26/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/26/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/27/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/27/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/28/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/28/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/29/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/29/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/30/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/30/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/31/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/31/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/32/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/32/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/33/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/33/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/34/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/34/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/35/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/35/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/36/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/36/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/37/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/37/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/38/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/38/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/39/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/39/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/40/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/40/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/41/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/41/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/42/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/42/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/43/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/43/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/44/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/44/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/45/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/45/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/46/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/46/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/47/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/47/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/48/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/48/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/49/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/49/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/50/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/50/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/51/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/51/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/52/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/52/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/53/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/53/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/54/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/54/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/55/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/55/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/56/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/56/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/57/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/57/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/58/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/58/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/59/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/59/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/60/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/60/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/61/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/61/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/62/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/62/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/63/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/63/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/64/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/64/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/65/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/65/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/66/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/66/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/67/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/67/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/68/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/68/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/69/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/69/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/70/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/70/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/71/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/71/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/72/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/72/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/73/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/73/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/74/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/74/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/75/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/75/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/76/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/76/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/77/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/77/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/78/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/78/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/79/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/79/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/80/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/80/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/81/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/81/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/82/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/82/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/83/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/83/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/84/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/84/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/85/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/85/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/86/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/86/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/87/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/87/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/88/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/88/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/89/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/89/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/90/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/90/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/91/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/91/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/92/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/92/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/93/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/93/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/94/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/94/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/95/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/95/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/96/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/96/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/97/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/97/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/98/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/98/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/99/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/99/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/blacksky/backer/100/website?requireActive=false" target="_blank"><img src="https://opencollective.com/blacksky/backer/100/avatar.svg?requireActive=false"></a>
+```bash
+./ssl.sh <local ip>
+```
 
-## Contribution
+To find your local IP address, you can use:
 
-We welcome contributions from the community to help us improve and expand rsky. If you're interested in contributing, please feel free to submit issues or pull requests on the GitHub repository. We appreciate your support!
+```bash
+ip a
+```
 
-**Rules:**
+Note: You can skip this step if you don't need HTTPS. In that case, don't specify `-c` and `-p` options when running the relay.
 
-- We'll try our best but may not respond to your issue or PR.
-- We may close an issue or PR without much feedback.
-- We may lock discussions or contributions if our attention is getting DDOSed.
-- We do not provide support for build issues.
+### 3. Run the Relay Server
 
-**Guidelines:**
+Start the relay server with debug logging:
 
-- Strict adherence to our [Code of Conduct](/.github/CODE_OF_CONDUCT.md)
-- Implementations should follow closely to the [canonical Typescript implementation](https://github.com/bluesky-social/atproto)
-- Check for existing issues before filing a new one, please.
-- Open an issue and give some time for discussion before submitting a PR.
-- Stay away from PRs that:
-    - Refactor large parts of the codebase
-    - Add entirely new features without prior discussion
-    - Change the tooling or frameworks used without prior discussion
-    - Introduce new unnecessary dependencies
+```bash
+RUST_LOG='rsky_relay=debug' cargo run -rp rsky-relay -- -c <local ip>.crt -p <local ip>.key
+```
 
-## License
+For non-HTTPS mode:
 
-rsky is released under the [Apache License 2.0](./LICENSE).
+```bash
+RUST_LOG='rsky_relay=debug' cargo run -rp rsky-relay
+```
+
+### 4. Test the Connection
+
+You can test the WebSocket connection using `websocat`:
+
+```bash
+websocat -k wss://localhost:9000/xrpc/com.atproto.sync.subscribeRepos?cursor=0
+```
+
+You can test the HTTP endpoints using `curl`:
+
+```bash
+curl https://localhost:9000/xrpc/com.atproto.sync.listHosts?limit=10
+```
+
+## Command-Line Options
+
+- `-c, --cert <FILE>`: Path to SSL certificate file
+- `-p, --key <FILE>`: Path to SSL private key file
+- `--no-plc-export`: Run the relay without requiring PLC export data (useful after running the crawler for only a short time)
+
+## Logging
+
+rsky-relay uses the `RUST_LOG` environment variable to control log levels. Example:
+
+```bash
+RUST_LOG='rsky_relay=debug' cargo run -rp rsky-relay
+```
