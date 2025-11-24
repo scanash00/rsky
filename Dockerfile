@@ -38,4 +38,4 @@ EXPOSE 9000
 ENV RUST_LOG=rsky_relay=info
 
 # Run the relay
-CMD ["rsky-relay"]
+CMD ["rsky-relay", "--no-plc-export"]
